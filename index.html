@@ -7,23 +7,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Capital">
-    <link rel="manifest" href="data:application/manifest+json,{
-        \"name\": \"Capital — Накопления\",
-        \"short_name\": \"Capital\",
-        \"start_url\": \".\",
-        \"display\": \"standalone\",
-        \"background_color\": \"#0B0C0E\",
-        \"theme_color\": \"#0B0C0E\",
-        \"description\": \"Управляй финансами и копи на цель\",
-        \"icons\": [{
-            \"src\": \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23D4AF37'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='%230B0C0E' font-weight='bold'%3E₽%3C/text%3E%3C/svg%3E\",
-            \"sizes\": \"any\",
-            \"type\": \"image/svg+xml\"
-        }]
-    }">
+    
+    <!-- PWA Manifest (подключается внешний файл) -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <title>Capital — накопления</title>
     <style>
-        /* ваш существующий стиль (оставьте как есть) */
         * {
             margin: 0;
             padding: 0;
@@ -637,6 +627,13 @@
 
     loadFromStorage();
     bind();
+
+    // Регистрация Service Worker для PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/capital-pwa/sw.js')
+            .then(reg => console.log('✅ Service Worker зарегистрирован:', reg))
+            .catch(err => console.log('❌ Ошибка SW:', err));
+    }
 </script>
 </body>
 </html>
