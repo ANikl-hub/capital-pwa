@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#0B0C0E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Capital">
+    <link rel="manifest" href="data:application/manifest+json,{
+        \"name\": \"Capital — Накопления\",
+        \"short_name\": \"Capital\",
+        \"start_url\": \".\",
+        \"display\": \"standalone\",
+        \"background_color\": \"#0B0C0E\",
+        \"theme_color\": \"#0B0C0E\",
+        \"description\": \"Управляй финансами и копи на цель\",
+        \"icons\": [{
+            \"src\": \"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23D4AF37'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='%230B0C0E' font-weight='bold'%3E₽%3C/text%3E%3C/svg%3E\",
+            \"sizes\": \"any\",
+            \"type\": \"image/svg+xml\"
+        }]
+    }">
+    <title>Capital — накопления</title>
+    <style>
+        /* ваш существующий стиль (оставьте как есть) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0B0C0E;
+            font-family: -apple-system, 'Inter', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            letter-spacing: -0.01em;
+        }
+        .app {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .card {
+            background: #121316;
+            border-radius: 28px;
+            padding: 24px 20px;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 500;
+            color: #8E8E92;
+            margin-bottom: 0.5rem;
+        }
+        .value-large {
+            font-size: 2.4rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+        .value-medium {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #FFFFFF;
+        }
+        .goal-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .goal-title {
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: #FFFFFF;
+            letter-spacing: -0.3px;
+            word-break: break-word;
+            flex: 1;
+        }
+        .goal-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(255,255,255,0.04);
+            padding: 8px 16px;
+            border-radius: 100px;
+            color: #CFCFD4;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 0.5px solid rgba(255,255,255,0.1);
+            white-space: nowrap;
+        }
+        .goal-badge:active {
+            background: rgba(255,255,255,0.12);
+            transform: scale(0.96);
+        }
+        .metrics-grid {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            justify-content: space-between;
+        }
+        .metric {
+            flex: 1;
+            min-width: 120px;
+        }
+        .progress-container {
+            margin: 24px 0 20px;
+        }
+        .progress-track {
+            background: #26272D;
+            border-radius: 100px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #D4AF37;
+            width: 0%;
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            font-weight: 450;
+            color: #9A9AA0;
+        }
+        .form-area {
+            margin: 28px 0 20px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .field {
+            width: 100%;
+        }
+        .field label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #8E8E94;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            background: #1A1B1F;
+            border: 1px solid #2A2B30;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            color: #FFFFFF;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.15s, background 0.15s;
+        }
+        input:focus, select:focus {
+            border-color: #D4AF37;
+            background: #1F2025;
+        }
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23A0A0A8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+        }
+        .btn {
+            background: #D4AF37;
+            border: none;
+            border-radius: 28px;
+            padding: 14px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #0B0C0E;
+            cursor: pointer;
+            transition: all 0.1s;
+            font-family: inherit;
+            margin-top: 8px;
+            width: 100%;
+        }
+        .btn:active {
+            background: #E5C252;
+            transform: scale(0.97);
+        }
+        .history-section {
+            margin-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 20px;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .history-toggle, .clear-history-btn {
+            background: none;
+            border: 0.5px solid #2D2E35;
+            color: #B0B0B8;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.1s;
+        }
+        .history-toggle:active, .clear-history-btn:active {
+            background: rgba(255,255,255,0.05);
+            transform: scale(0.96);
+        }
+        .history-list {
+            max-height: 460px;
+            overflow-y: auto;
+            transition: all 0.2s;
+            -webkit-overflow-scrolling: touch;
+        }
+        .history-list.hidden {
+            display: none;
+        }
+        .transaction-item {
+            background: #0F1013;
+            border-radius: 20px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 0.5px solid rgba(255,255,255,0.04);
+        }
+        .transaction-left {
+            flex: 1;
+            padding-right: 12px;
+        }
+        .transaction-type {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            margin-bottom: 4px;
+        }
+        .income-type { color: #D4AF37; }
+        .expense-type { color: #B35D4A; }
+        .transaction-note {
+            font-size: 0.85rem;
+            color: #CACAD2;
+            font-weight: 450;
+            margin: 4px 0;
+            word-break: break-word;
+        }
+        .transaction-date {
+            font-size: 0.65rem;
+            color: #6F6F78;
+        }
+        .transaction-amount {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+        .income-amount { color: #D4AF37; }
+        .expense-amount { color: #C96A53; }
+        .delete-transaction {
+            background: none;
+            border: none;
+            color: #5A5A64;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 8px 8px;
+            border-radius: 40px;
+            transition: 0.1s;
+            margin-left: 8px;
+            min-width: 44px;
+        }
+        .delete-transaction:active {
+            color: #D4AF37;
+            background: rgba(212,175,55,0.1);
+            transform: scale(0.94);
+        }
+        .empty-history {
+            text-align: center;
+            padding: 32px 20px;
+            color: #5E5E68;
+            font-size: 0.85rem;
+            border: 1px dashed rgba(255,255,255,0.05);
+            border-radius: 24px;
+        }
+        footer {
+            font-size: 0.65rem;
+            color: #484850;
+            text-align: center;
+            margin-top: 24px;
+            padding-bottom: 8px;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18191E;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3A3B42;
+            border-radius: 10px;
+        }
+        input, select, button {
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="card">
+        <div class="goal-row">
+            <div class="goal-title" id="goalNameDisplay">Капитал</div>
+            <div class="goal-badge" id="editGoalBtn">редактировать</div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric">
+                <div class="label">Накоплено</div>
+                <div class="value-large" id="currentAmountDisplay">0 ₽</div>
+            </div>
+            <div class="metric">
+                <div class="label">Цель</div>
+                <div class="value-medium" id="targetAmountDisplay">0 ₽</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="percentSpan">0%</span>
+                <span>Осталось <span id="remainderSpan">0 ₽</span></span>
+            </div>
+        </div>
+
+        <div class="form-area">
+            <div class="form-row">
+                <div class="field">
+                    <label>Тип</label>
+                    <select id="transactionType">
+                        <option value="income">Доход +</option>
+                        <option value="expense">Расход −</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Сумма</label>
+                    <input type="number" id="amountInput" placeholder="0" min="0" step="1" inputmode="numeric">
+                </div>
+                <div class="field">
+                    <label>Описание</label>
+                    <input type="text" id="noteInput" placeholder="Что это?">
+                </div>
+                <button id="addTransactionBtn" class="btn">Добавить операцию</button>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">
+                <span class="label" style="margin-bottom:0;">ЖУРНАЛ</span>
+                <div class="history-actions">
+                    <button id="clearHistoryBtn" class="clear-history-btn">Очистить</button>
+                    <button id="toggleHistoryBtn" class="history-toggle">⌄ Скрыть</button>
+                </div>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="empty-history">Нет записей</div>
+            </div>
+        </div>
+        <footer>LocalStorage • данные остаются у вас</footer>
+    </div>
+</div>
+
+<script>
+    let state = {
+        goalName: "Капитал",
+        targetAmount: 100000,
+        currentAmount: 0,
+        transactions: []
+    };
+
+    const goalNameDisplay = document.getElementById('goalNameDisplay');
+    const targetAmountDisplay = document.getElementById('targetAmountDisplay');
+    const currentAmountDisplay = document.getElementById('currentAmountDisplay');
+    const progressFill = document.getElementById('progressFill');
+    const remainderSpan = document.getElementById('remainderSpan');
+    const percentSpan = document.getElementById('percentSpan');
+    const historyContainer = document.getElementById('historyList');
+    const transactionType = document.getElementById('transactionType');
+    const amountInput = document.getElementById('amountInput');
+    const noteInput = document.getElementById('noteInput');
+    const addBtn = document.getElementById('addTransactionBtn');
+    const editGoalBtn = document.getElementById('editGoalBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+
+    let historyHidden = false;
+
+    const formatMoney = (value) => new Intl.NumberFormat('ru-RU').format(Math.floor(Math.abs(value))) + ' ₽';
+
+    function recalcBalance() {
+        let balance = 0;
+        for (let t of state.transactions) {
+            if (t.type === 'income') balance += t.amount;
+            else balance -= t.amount;
+        }
+        state.currentAmount = balance;
+    }
+
+    function persist() {
+        const toStore = {
+            goalName: state.goalName,
+            targetAmount: state.targetAmount,
+            currentAmount: state.currentAmount,
+            transactions: state.transactions
+        };
+        localStorage.setItem('premium_goal_app', JSON.stringify(toStore));
+    }
+
+    function loadFromStorage() {
+        const raw = localStorage.getItem('premium_goal_app');
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                state.goalName = data.goalName || "Капитал";
+                state.targetAmount = (typeof data.targetAmount === 'number' && data.targetAmount > 0) ? data.targetAmount : 100000;
+                state.transactions = Array.isArray(data.transactions) ? data.transactions : [];
+                recalcBalance();
+            } catch(e) { setDefault(); }
+        } else {
+            setDefault();
+        }
+        if (state.transactions.length === 0 && state.currentAmount === 0) {
+            addDemoEntry();
+        }
+        recalcBalance();
+        renderAll();
+    }
+
+    function setDefault() {
+        state.goalName = "Капитал";
+        state.targetAmount = 100000;
+        state.transactions = [];
+        state.currentAmount = 0;
+    }
+
+    function addDemoEntry() {
+        const demo = {
+            id: Date.now(),
+            type: 'income',
+            amount: 12450,
+            note: 'Инвестиционный доход',
+            date: new Date().toLocaleString()
+        };
+        state.transactions.push(demo);
+        recalcBalance();
+        persist();
+    }
+
+    function addTransaction(type, amount, note) {
+        if (isNaN(amount) || amount <= 0) {
+            alert("Введите сумму больше нуля");
+            return false;
+        }
+        const cleanNote = note.trim() === "" ? (type === 'income' ? "Поступление" : "Списание") : note.trim();
+        const newTransaction = {
+            id: Date.now(),
+            type: type,
+            amount: amount,
+            note: cleanNote,
+            date: new Date().toLocaleString(),
+        };
+        state.transactions.unshift(newTransaction);
+        recalcBalance();
+        persist();
+        renderAll();
+        return true;
+    }
+
+    function deleteTransaction(id) {
+        state.transactions = state.transactions.filter(t => t.id !== id);
+        recalcBalance();
+        persist();
+        renderAll();
+    }
+
+    function clearAllHistory() {
+        if (confirm("Удалить всю историю? Баланс станет нулевым.")) {
+            state.transactions = [];
+            recalcBalance();
+            persist();
+            renderAll();
+        }
+    }
+
+    function editGoal() {
+        let newName = prompt("Название цели", state.goalName);
+        if (newName !== null && newName.trim() !== "") state.goalName = newName.trim();
+        let newTarget = prompt("Целевая сумма (₽)", state.targetAmount);
+        if (newTarget !== null) {
+            const num = parseFloat(newTarget);
+            if (!isNaN(num) && num > 0) state.targetAmount = num;
+            else if (num <= 0) alert("Сумма должна быть больше нуля");
+        }
+        persist();
+        renderAll();
+    }
+
+    function renderAll() {
+        goalNameDisplay.innerText = state.goalName;
+        targetAmountDisplay.innerText = formatMoney(state.targetAmount);
+        currentAmountDisplay.innerText = formatMoney(state.currentAmount);
+        const percent = (state.currentAmount / state.targetAmount) * 100;
+        const percentClamped = Math.min(100, Math.max(0, percent));
+        progressFill.style.width = `${percentClamped}%`;
+        percentSpan.innerText = `${Math.floor(percentClamped)}%`;
+        const remainder = Math.max(0, state.targetAmount - state.currentAmount);
+        remainderSpan.innerText = formatMoney(remainder);
+
+        if (!state.transactions.length) {
+            historyContainer.innerHTML = `<div class="empty-history">Журнал пуст. Добавьте операцию</div>`;
+            return;
+        }
+        let html = '';
+        for (let t of state.transactions) {
+            const isIncome = t.type === 'income';
+            const typeClass = isIncome ? 'income-type' : 'expense-type';
+            const amountClass = isIncome ? 'income-amount' : 'expense-amount';
+            const sign = isIncome ? '+' : '−';
+            html += `
+                <div class="transaction-item">
+                    <div class="transaction-left">
+                        <div class="transaction-type ${typeClass}">${isIncome ? 'ДОХОД' : 'РАСХОД'}</div>
+                        <div class="transaction-note">${escapeHtml(t.note)}</div>
+                        <div class="transaction-date">${t.date}</div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div class="transaction-amount ${amountClass}">${sign} ${formatMoney(t.amount)}</div>
+                        <button class="delete-transaction" data-id="${t.id}">✕</button>
+                    </div>
+                </div>
+            `;
+        }
+        historyContainer.innerHTML = html;
+        document.querySelectorAll('.delete-transaction').forEach(btn => {
+            const id = parseInt(btn.getAttribute('data-id'));
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteTransaction(id);
+            });
+        });
+        if (historyHidden) {
+            historyContainer.classList.add('hidden');
+            toggleHistoryBtn.innerText = '⌃ Показать';
+        } else {
+            historyContainer.classList.remove('hidden');
+            toggleHistoryBtn.innerText = '⌄ Скрыть';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function toggleHistory() {
+        historyHidden = !historyHidden;
+        if (historyHidden) {
+            historyContainer.classList.add('hidden');
+            toggleHistoryBtn.innerText = '⌃ Показать';
+        } else {
+            historyContainer.classList.remove('hidden');
+            toggleHistoryBtn.innerText = '⌄ Скрыть';
+        }
+    }
+
+    function handleAdd() {
+        const type = transactionType.value;
+        const amount = parseFloat(amountInput.value);
+        const note = noteInput.value;
+        if (isNaN(amount) || amount <= 0) {
+            alert("Введите сумму больше нуля");
+            return;
+        }
+        addTransaction(type, amount, note);
+        amountInput.value = '';
+        noteInput.value = '';
+        amountInput.focus();
+    }
+
+    function bind() {
+        addBtn.addEventListener('click', handleAdd);
+        editGoalBtn.addEventListener('click', editGoal);
+        clearHistoryBtn.addEventListener('click', clearAllHistory);
+        toggleHistoryBtn.addEventListener('click', toggleHistory);
+        amountInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAdd(); });
+        noteInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAdd(); });
+    }
+
+    loadFromStorage();
+    bind();
+</script>
+</body>
+</html>
