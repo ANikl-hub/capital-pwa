@@ -163,6 +163,16 @@
             outline: none;
             transition: border 0.15s, background 0.15s;
         }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 0.5;
+            background: #2A2B30;
+        }
         input:focus, select:focus {
             border-color: #D4AF37;
             background: #1F2025;
@@ -256,6 +266,7 @@
         }
         .income-type { color: #D4AF37; }
         .expense-type { color: #B35D4A; }
+        .correction-type { color: #6C8EBF; }
         .transaction-note {
             font-size: 0.85rem;
             color: #CACAD2;
@@ -275,6 +286,7 @@
         }
         .income-amount { color: #D4AF37; }
         .expense-amount { color: #C96A53; }
+        .correction-amount { color: #6C8EBF; }
         .delete-transaction {
             background: none;
             border: none;
@@ -367,11 +379,11 @@
                 </div>
                 <div class="field">
                     <label>Сумма</label>
-                    <input type="number" id="amountInput" placeholder="0" min="0" step="1" inputmode="numeric">
+                    <input type="number" id="amountInput" placeholder="0" min="0" step="1" inputmode="decimal" pattern="[0-9]*">
                 </div>
                 <div class="field">
                     <label>Описание</label>
-                    <input type="text" id="noteInput" placeholder="Что это?">
+                    <input type="text" id="noteInput" placeholder="Что это?" enterkeyhint="done">
                 </div>
                 <button id="addTransactionBtn" class="btn">Добавить операцию</button>
             </div>
@@ -424,7 +436,7 @@
         let balance = 0;
         for (let t of state.transactions) {
             if (t.type === 'income') balance += t.amount;
-            else balance -= t.amount;
+            else if (t.type === 'expense') balance -= t.amount;
         }
         state.currentAmount = balance;
     }
@@ -437,19 +449,6 @@
             transactions: state.transactions
         };
         localStorage.setItem('premium_goal_app', JSON.stringify(toStore));
-    }
-
-    function addDemoEntry() {
-        const demo = {
-            id: Date.now(),
-            type: 'income',
-            amount: 12450,
-            note: 'Инвестиционный доход (демо)',
-            date: new Date().toLocaleString()
-        };
-        state.transactions.push(demo);
-        recalcBalance();
-        persist();
     }
 
     function loadFromStorage() {
@@ -466,10 +465,6 @@
             }
         } else {
             setDefault();
-            // Демо-запись добавляется ТОЛЬКО при первом запуске (когда нет сохранённых данных)
-            if (state.transactions.length === 0) {
-                addDemoEntry();
-            }
         }
         recalcBalance();
         renderAll();
@@ -521,12 +516,39 @@
     function editGoal() {
         let newName = prompt("Название цели", state.goalName);
         if (newName !== null && newName.trim() !== "") state.goalName = newName.trim();
+        
         let newTarget = prompt("Целевая сумма (₽)", state.targetAmount);
         if (newTarget !== null) {
             const num = parseFloat(newTarget);
             if (!isNaN(num) && num > 0) state.targetAmount = num;
             else if (num <= 0) alert("Сумма должна быть больше нуля");
         }
+        
+        let newCurrent = prompt("Сколько уже накоплено? (₽)\nЕсли оставить пустым — останется текущая сумма", state.currentAmount);
+        if (newCurrent !== null && newCurrent.trim() !== "") {
+            const num = parseFloat(newCurrent);
+            if (!isNaN(num) && num >= 0) {
+                const difference = num - state.currentAmount;
+                if (difference !== 0) {
+                    // Создаём корректировочную запись в истории
+                    const correctionNote = difference > 0 
+                        ? `Корректировка: установлена начальная сумма ${formatMoney(num)}` 
+                        : `Корректировка: установлена сумма ${formatMoney(num)}`;
+                    const correctionTransaction = {
+                        id: Date.now(),
+                        type: difference > 0 ? 'income' : 'expense',
+                        amount: Math.abs(difference),
+                        note: correctionNote,
+                        date: new Date().toLocaleString() + ' (редактирование цели)'
+                    };
+                    state.transactions.unshift(correctionTransaction);
+                    state.currentAmount = num;
+                }
+            } else if (num < 0) {
+                alert("Сумма не может быть отрицательной");
+            }
+        }
+        
         persist();
         renderAll();
     }
@@ -549,13 +571,33 @@
         let html = '';
         for (let t of state.transactions) {
             const isIncome = t.type === 'income';
-            const typeClass = isIncome ? 'income-type' : 'expense-type';
-            const amountClass = isIncome ? 'income-amount' : 'expense-amount';
-            const sign = isIncome ? '+' : '−';
+            const isExpense = t.type === 'expense';
+            let typeClass = '', amountClass = '', typeText = '', sign = '';
+            
+            if (isIncome) {
+                typeClass = 'income-type';
+                amountClass = 'income-amount';
+                typeText = 'ДОХОД';
+                sign = '+';
+            } else if (isExpense) {
+                typeClass = 'expense-type';
+                amountClass = 'expense-amount';
+                typeText = 'РАСХОД';
+                sign = '−';
+            }
+            
+            // Проверяем, является ли запись корректировочной (по наличию ключевых слов в примечании)
+            const isCorrection = t.note && (t.note.includes('Корректировка') || t.note.includes('начальная сумма'));
+            if (isCorrection) {
+                typeClass = 'correction-type';
+                amountClass = 'correction-amount';
+                typeText = '✎ КОРРЕКТИРОВКА';
+            }
+            
             html += `
                 <div class="transaction-item">
                     <div class="transaction-left">
-                        <div class="transaction-type ${typeClass}">${isIncome ? 'ДОХОД' : 'РАСХОД'}</div>
+                        <div class="transaction-type ${typeClass}">${typeText}</div>
                         <div class="transaction-note">${escapeHtml(t.note)}</div>
                         <div class="transaction-date">${t.date}</div>
                     </div>
@@ -618,13 +660,20 @@
         amountInput.focus();
     }
 
+    function handleKeyboardSubmit(e) {
+        if (e.key === 'Enter' && (e.target === amountInput || e.target === noteInput)) {
+            e.preventDefault();
+            handleAdd();
+        }
+    }
+
     function bind() {
         addBtn.addEventListener('click', handleAdd);
         editGoalBtn.addEventListener('click', editGoal);
         clearHistoryBtn.addEventListener('click', clearAllHistory);
         toggleHistoryBtn.addEventListener('click', toggleHistory);
-        amountInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAdd(); });
-        noteInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAdd(); });
+        amountInput.addEventListener('keypress', handleKeyboardSubmit);
+        noteInput.addEventListener('keypress', handleKeyboardSubmit);
     }
 
     loadFromStorage();
