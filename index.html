@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Capital">
     
-    <!-- PWA Manifest (подключается внешний файл) -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
@@ -390,7 +389,7 @@
                 <div class="empty-history">Нет записей</div>
             </div>
         </div>
-        <footer>LocalStorage • данные остаются у вас</footer>
+        <footer>LocalStorage • данные сохраняются на вашем устройстве</footer>
     </div>
 </div>
 
@@ -440,6 +439,19 @@
         localStorage.setItem('premium_goal_app', JSON.stringify(toStore));
     }
 
+    function addDemoEntry() {
+        const demo = {
+            id: Date.now(),
+            type: 'income',
+            amount: 12450,
+            note: 'Инвестиционный доход (демо)',
+            date: new Date().toLocaleString()
+        };
+        state.transactions.push(demo);
+        recalcBalance();
+        persist();
+    }
+
     function loadFromStorage() {
         const raw = localStorage.getItem('premium_goal_app');
         if (raw) {
@@ -449,12 +461,15 @@
                 state.targetAmount = (typeof data.targetAmount === 'number' && data.targetAmount > 0) ? data.targetAmount : 100000;
                 state.transactions = Array.isArray(data.transactions) ? data.transactions : [];
                 recalcBalance();
-            } catch(e) { setDefault(); }
+            } catch(e) { 
+                setDefault(); 
+            }
         } else {
             setDefault();
-        }
-        if (state.transactions.length === 0 && state.currentAmount === 0) {
-            addDemoEntry();
+            // Демо-запись добавляется ТОЛЬКО при первом запуске (когда нет сохранённых данных)
+            if (state.transactions.length === 0) {
+                addDemoEntry();
+            }
         }
         recalcBalance();
         renderAll();
@@ -465,19 +480,6 @@
         state.targetAmount = 100000;
         state.transactions = [];
         state.currentAmount = 0;
-    }
-
-    function addDemoEntry() {
-        const demo = {
-            id: Date.now(),
-            type: 'income',
-            amount: 12450,
-            note: 'Инвестиционный доход',
-            date: new Date().toLocaleString()
-        };
-        state.transactions.push(demo);
-        recalcBalance();
-        persist();
     }
 
     function addTransaction(type, amount, note) {
@@ -628,11 +630,10 @@
     loadFromStorage();
     bind();
 
-    // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/capital-pwa/sw.js')
-            .then(reg => console.log('✅ Service Worker зарегистрирован:', reg))
-            .catch(err => console.log('❌ Ошибка SW:', err));
+            .then(reg => console.log('✅ SW registered:', reg))
+            .catch(err => console.log('❌ SW error:', err));
     }
 </script>
 </body>
