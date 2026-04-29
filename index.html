@@ -49,7 +49,6 @@
             color: #8E8E92;
             margin-bottom: 0.3rem;
         }
-        /* Адаптивный размер шрифта для больших чисел */
         .value-large {
             font-size: 2rem;
             font-weight: 600;
@@ -59,7 +58,7 @@
             word-break: break-word;
         }
         .value-negative {
-            color: #C96A53;
+            color: #D9634D;
         }
         .value-medium {
             font-size: 1.2rem;
@@ -67,7 +66,6 @@
             color: #FFFFFF;
             word-break: break-word;
         }
-        /* Для очень больших чисел (миллионы) */
         @media (max-width: 450px) {
             .value-large { font-size: 1.6rem; }
             .value-medium { font-size: 1rem; }
@@ -269,8 +267,8 @@
             letter-spacing: 0.03em;
             margin-bottom: 3px;
         }
-        .income-type { color: #D4AF37; }
-        .expense-type { color: #B35D4A; }
+        .income-type { color: #2E9B4B; }
+        .expense-type { color: #D9634D; }
         .correction-type { color: #6C8EBF; }
         .transaction-note {
             font-size: 0.75rem;
@@ -289,8 +287,8 @@
             letter-spacing: -0.2px;
             white-space: nowrap;
         }
-        .income-amount { color: #D4AF37; }
-        .expense-amount { color: #C96A53; }
+        .income-amount { color: #2E9B4B; }
+        .expense-amount { color: #D9634D; }
         .correction-amount { color: #6C8EBF; }
         .delete-transaction {
             background: none;
@@ -435,15 +433,17 @@
 
     let historyHidden = false;
 
-    // Функция для преобразования запятой в точку
+    // ИСПРАВЛЕННАЯ функция парсинга — удаляем пробелы, заменяем запятую на точку
     function parseAmount(value) {
         if (!value && value !== 0) return NaN;
         let str = String(value).trim();
+        // Удаляем все пробелы
+        str = str.replace(/\s/g, '');
+        // Заменяем запятую на точку
         str = str.replace(',', '.');
         return parseFloat(str);
     }
 
-    // Форматирование с пробелами между разрядами
     const formatMoney = (value) => {
         let num = value;
         let sign = '';
@@ -451,10 +451,8 @@
             sign = '−';
             num = Math.abs(num);
         }
-        // Округляем до 2 знаков для копеек, но для рублей можно и без копеек
         let rounded = Math.floor(num);
         let formatted = rounded.toLocaleString('ru-RU');
-        // Если есть копейки (дробная часть больше 0.01)
         let fractional = num - rounded;
         if (fractional > 0.009) {
             let kopecks = Math.round(fractional * 100);
@@ -558,8 +556,7 @@
             else if (num <= 0) alert("Сумма должна быть больше нуля");
         }
         
-        // ТЕПЕРЬ МОЖНО УКАЗАТЬ ОТРИЦАТЕЛЬНОЕ ЗНАЧЕНИЕ (долг)
-        let newCurrent = prompt("Текущий баланс (₽)\nМожно указать отрицательное значение, например -5000", formatMoney(state.currentAmount).replace(' ₽', ''));
+        let newCurrent = prompt("Текущий баланс (₽)", formatMoney(state.currentAmount).replace(' ₽', ''));
         if (newCurrent !== null && newCurrent.trim() !== "") {
             const num = parseAmount(newCurrent);
             if (!isNaN(num)) {
@@ -594,19 +591,17 @@
         const currentValue = state.currentAmount;
         currentAmountDisplay.innerText = formatMoney(currentValue);
         
-        // Подсветка красным при отрицательном балансе
         if (currentValue < 0) {
             currentAmountDisplay.classList.add('value-negative');
         } else {
             currentAmountDisplay.classList.remove('value-negative');
         }
         
-        // Прогресс: если баланс отрицательный или больше цели — корректируем
         let percent = 0;
         let remainder = 0;
         if (state.currentAmount < 0) {
             percent = 0;
-            remainder = state.targetAmount - state.currentAmount; // остаток с учётом долга
+            remainder = state.targetAmount - state.currentAmount;
         } else if (state.currentAmount >= state.targetAmount) {
             percent = 100;
             remainder = 0;
