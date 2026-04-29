@@ -42,24 +42,46 @@
             border: 1px solid rgba(255,255,255,0.04);
         }
         .label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.12em;
             font-weight: 500;
             color: #8E8E92;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
+        /* Адаптивный размер шрифта для больших чисел */
         .value-large {
-            font-size: 2.4rem;
+            font-size: 2rem;
             font-weight: 600;
             color: #FFFFFF;
-            line-height: 1.1;
+            line-height: 1.2;
             letter-spacing: -0.02em;
+            word-break: break-word;
+        }
+        .value-negative {
+            color: #C96A53;
         }
         .value-medium {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 500;
             color: #FFFFFF;
+            word-break: break-word;
+        }
+        /* Для очень больших чисел (миллионы) */
+        @media (max-width: 450px) {
+            .value-large { font-size: 1.6rem; }
+            .value-medium { font-size: 1rem; }
+        }
+        .metrics-grid {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            justify-content: flex-start;
+        }
+        .metric {
+            flex: 1;
+            min-width: 120px;
         }
         .goal-row {
             display: flex;
@@ -95,17 +117,6 @@
             background: rgba(255,255,255,0.12);
             transform: scale(0.96);
         }
-        .metrics-grid {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            margin-bottom: 28px;
-            justify-content: space-between;
-        }
-        .metric {
-            flex: 1;
-            min-width: 120px;
-        }
         .progress-container {
             margin: 24px 0 20px;
         }
@@ -127,7 +138,7 @@
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 450;
             color: #9A9AA0;
         }
@@ -163,15 +174,9 @@
             outline: none;
             transition: border 0.15s, background 0.15s;
         }
-        input[type="number"] {
-            -moz-appearance: textfield;
+        input {
             letter-spacing: 0.5px;
             font-weight: 500;
-        }
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            opacity: 0.5;
-            background: #2A2B30;
         }
         input:focus, select:focus {
             border-color: #D4AF37;
@@ -247,8 +252,8 @@
         .transaction-item {
             background: #0F1013;
             border-radius: 20px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -256,32 +261,32 @@
         }
         .transaction-left {
             flex: 1;
-            padding-right: 12px;
+            padding-right: 10px;
         }
         .transaction-type {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             letter-spacing: 0.03em;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .income-type { color: #D4AF37; }
         .expense-type { color: #B35D4A; }
         .correction-type { color: #6C8EBF; }
         .transaction-note {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #CACAD2;
             font-weight: 450;
-            margin: 4px 0;
+            margin: 3px 0;
             word-break: break-word;
         }
         .transaction-date {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #6F6F78;
         }
         .transaction-amount {
-            font-size: 1.2rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.2px;
             white-space: nowrap;
         }
         .income-amount { color: #D4AF37; }
@@ -291,13 +296,13 @@
             background: none;
             border: none;
             color: #5A5A64;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             cursor: pointer;
-            padding: 8px 8px;
+            padding: 6px 8px;
             border-radius: 40px;
             transition: 0.1s;
-            margin-left: 8px;
-            min-width: 44px;
+            margin-left: 6px;
+            min-width: 36px;
         }
         .delete-transaction:active {
             color: #D4AF37;
@@ -306,18 +311,18 @@
         }
         .empty-history {
             text-align: center;
-            padding: 32px 20px;
+            padding: 28px 16px;
             color: #5E5E68;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             border: 1px dashed rgba(255,255,255,0.05);
             border-radius: 24px;
         }
         footer {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #484850;
             text-align: center;
-            margin-top: 24px;
-            padding-bottom: 8px;
+            margin-top: 20px;
+            padding-bottom: 6px;
         }
         ::-webkit-scrollbar {
             width: 4px;
@@ -379,7 +384,7 @@
                 </div>
                 <div class="field">
                     <label>Сумма</label>
-                    <input type="number" id="amountInput" placeholder="0" min="0" step="1" inputmode="decimal" pattern="[0-9]*">
+                    <input type="text" id="amountInput" placeholder="0" inputmode="decimal" pattern="[0-9.,]*">
                 </div>
                 <div class="field">
                     <label>Описание</label>
@@ -401,7 +406,7 @@
                 <div class="empty-history">Нет записей</div>
             </div>
         </div>
-        <footer>LocalStorage • данные сохраняются на вашем устройстве</footer>
+        <footer>LocalStorage • возможен минус • данные сохраняются</footer>
     </div>
 </div>
 
@@ -430,7 +435,35 @@
 
     let historyHidden = false;
 
-    const formatMoney = (value) => new Intl.NumberFormat('ru-RU').format(Math.floor(Math.abs(value))) + ' ₽';
+    // Функция для преобразования запятой в точку
+    function parseAmount(value) {
+        if (!value && value !== 0) return NaN;
+        let str = String(value).trim();
+        str = str.replace(',', '.');
+        return parseFloat(str);
+    }
+
+    // Форматирование с пробелами между разрядами
+    const formatMoney = (value) => {
+        let num = value;
+        let sign = '';
+        if (num < 0) {
+            sign = '−';
+            num = Math.abs(num);
+        }
+        // Округляем до 2 знаков для копеек, но для рублей можно и без копеек
+        let rounded = Math.floor(num);
+        let formatted = rounded.toLocaleString('ru-RU');
+        // Если есть копейки (дробная часть больше 0.01)
+        let fractional = num - rounded;
+        if (fractional > 0.009) {
+            let kopecks = Math.round(fractional * 100);
+            if (kopecks > 0) {
+                formatted += '.' + (kopecks < 10 ? '0' + kopecks : kopecks);
+            }
+        }
+        return (sign ? sign + ' ' : '') + formatted + ' ₽';
+    };
 
     function recalcBalance() {
         let balance = 0;
@@ -489,6 +522,7 @@
             amount: amount,
             note: cleanNote,
             date: new Date().toLocaleString(),
+            timestamp: Date.now()
         };
         state.transactions.unshift(newTransaction);
         recalcBalance();
@@ -517,35 +551,36 @@
         let newName = prompt("Название цели", state.goalName);
         if (newName !== null && newName.trim() !== "") state.goalName = newName.trim();
         
-        let newTarget = prompt("Целевая сумма (₽)", state.targetAmount);
+        let newTarget = prompt("Целевая сумма (₽)", formatMoney(state.targetAmount).replace(' ₽', ''));
         if (newTarget !== null) {
-            const num = parseFloat(newTarget);
+            const num = parseAmount(newTarget);
             if (!isNaN(num) && num > 0) state.targetAmount = num;
             else if (num <= 0) alert("Сумма должна быть больше нуля");
         }
         
-        let newCurrent = prompt("Сколько уже накоплено? (₽)\nЕсли оставить пустым — останется текущая сумма", state.currentAmount);
+        // ТЕПЕРЬ МОЖНО УКАЗАТЬ ОТРИЦАТЕЛЬНОЕ ЗНАЧЕНИЕ (долг)
+        let newCurrent = prompt("Текущий баланс (₽)\nМожно указать отрицательное значение, например -5000", formatMoney(state.currentAmount).replace(' ₽', ''));
         if (newCurrent !== null && newCurrent.trim() !== "") {
-            const num = parseFloat(newCurrent);
-            if (!isNaN(num) && num >= 0) {
+            const num = parseAmount(newCurrent);
+            if (!isNaN(num)) {
                 const difference = num - state.currentAmount;
-                if (difference !== 0) {
-                    // Создаём корректировочную запись в истории
+                if (Math.abs(difference) > 0.001) {
                     const correctionNote = difference > 0 
-                        ? `Корректировка: установлена начальная сумма ${formatMoney(num)}` 
-                        : `Корректировка: установлена сумма ${formatMoney(num)}`;
+                        ? `Корректировка: установлен баланс ${formatMoney(num)}` 
+                        : `Корректировка: установлен баланс ${formatMoney(num)}`;
                     const correctionTransaction = {
                         id: Date.now(),
                         type: difference > 0 ? 'income' : 'expense',
                         amount: Math.abs(difference),
                         note: correctionNote,
-                        date: new Date().toLocaleString() + ' (редактирование цели)'
+                        date: new Date().toLocaleString() + ' (редактирование цели)',
+                        timestamp: Date.now()
                     };
                     state.transactions.unshift(correctionTransaction);
                     state.currentAmount = num;
                 }
-            } else if (num < 0) {
-                alert("Сумма не может быть отрицательной");
+            } else {
+                alert("Введите корректное число");
             }
         }
         
@@ -556,13 +591,38 @@
     function renderAll() {
         goalNameDisplay.innerText = state.goalName;
         targetAmountDisplay.innerText = formatMoney(state.targetAmount);
-        currentAmountDisplay.innerText = formatMoney(state.currentAmount);
-        const percent = (state.currentAmount / state.targetAmount) * 100;
+        const currentValue = state.currentAmount;
+        currentAmountDisplay.innerText = formatMoney(currentValue);
+        
+        // Подсветка красным при отрицательном балансе
+        if (currentValue < 0) {
+            currentAmountDisplay.classList.add('value-negative');
+        } else {
+            currentAmountDisplay.classList.remove('value-negative');
+        }
+        
+        // Прогресс: если баланс отрицательный или больше цели — корректируем
+        let percent = 0;
+        let remainder = 0;
+        if (state.currentAmount < 0) {
+            percent = 0;
+            remainder = state.targetAmount - state.currentAmount; // остаток с учётом долга
+        } else if (state.currentAmount >= state.targetAmount) {
+            percent = 100;
+            remainder = 0;
+        } else {
+            percent = (state.currentAmount / state.targetAmount) * 100;
+            remainder = state.targetAmount - state.currentAmount;
+        }
         const percentClamped = Math.min(100, Math.max(0, percent));
         progressFill.style.width = `${percentClamped}%`;
         percentSpan.innerText = `${Math.floor(percentClamped)}%`;
-        const remainder = Math.max(0, state.targetAmount - state.currentAmount);
-        remainderSpan.innerText = formatMoney(remainder);
+        
+        if (state.currentAmount < 0) {
+            remainderSpan.innerText = `перерасход ${formatMoney(Math.abs(state.currentAmount))}`;
+        } else {
+            remainderSpan.innerText = formatMoney(remainder);
+        }
 
         if (!state.transactions.length) {
             historyContainer.innerHTML = `<div class="empty-history">Журнал пуст. Добавьте операцию</div>`;
@@ -586,8 +646,7 @@
                 sign = '−';
             }
             
-            // Проверяем, является ли запись корректировочной (по наличию ключевых слов в примечании)
-            const isCorrection = t.note && (t.note.includes('Корректировка') || t.note.includes('начальная сумма'));
+            const isCorrection = t.note && (t.note.includes('Корректировка') || t.note.includes('начальная сумма') || t.note.includes('установлен баланс'));
             if (isCorrection) {
                 typeClass = 'correction-type';
                 amountClass = 'correction-amount';
@@ -648,12 +707,13 @@
 
     function handleAdd() {
         const type = transactionType.value;
-        const amount = parseFloat(amountInput.value);
+        let amount = parseAmount(amountInput.value);
         const note = noteInput.value;
         if (isNaN(amount) || amount <= 0) {
             alert("Введите сумму больше нуля");
             return;
         }
+        amount = Math.round(amount * 100) / 100;
         addTransaction(type, amount, note);
         amountInput.value = '';
         noteInput.value = '';
